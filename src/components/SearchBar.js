@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { fetchSuggestions } from '../actions/index';
+import { fetchSuggestions, clearSuggestions, submitSymptoms } from '../actions/index';
 import Autosuggest from 'react-autosuggest';
+
+import './theme.css';
+import SelectedSymptoms from './SelectedSymptoms';
 
 class SearchBar extends Component {
   constructor(props) {
@@ -9,57 +12,80 @@ class SearchBar extends Component {
 
     this.state = {
       term: '',
-      lastFetched: 0
+      lastFetched: 0,
+      symptoms: []
     };
-    this.renderSuggestions = this.renderSuggestions.bind(this);
   }
 
-  onInputChange(event) {
+  onSuggestionsFetchRequested({ value }) {
     let { lastFetched } = this.state;
 
-    this.setState({ term: event.target.value });
-
-    if (event.target.value.length >= 3 && (new Date() - new Date(lastFetched)) > 300) {
+    if (value.length >= 3 && (new Date() - new Date(lastFetched)) > 300) {
       this.setState({ lastFetched: Date.now() })
-      this.props.fetchSuggestions(event.target.value);
+      this.props.fetchSuggestions(value);
     }
   }
 
-  renderSuggestions(sug) {
+  onSuggestionsClearRequested() {
+    this.props.clearSuggestions();
+  }
+
+  getSuggestionValue(sug) {
+    const { symptoms } = this.state;
+    this.setState({ symptoms: [ ...symptoms, sug ]});
+
+    return '';
+  }
+
+  renderSuggestion(sug, { query, isHighlighted }) {
     return (
-      <option key={sug} value={sug} onClick={() => console.log('selected')}/>
+      <div>
+        {sug}
+      </div>
     )
+  }
+
+  removeSymptom(symptom) {
+    this.setState({
+      symptoms: this.state.symptoms.filter(value => value !== symptom)
+    })
+  }
+
+  onChange(event, { newValue }) {
+    this.setState({ term: newValue });
+  }
+
+  submitSymptoms(){
+    this.props.submitSymptoms(this.state.symptoms);
   }
 
   render() {
     const { symptomSuggestions } = this.props;
-    // console.log(symptomSuggestions)
-    return (
-      <form className='input-group' style={styles.inputGroup}>
-        <input
-          type='text'
-          className='form-control'
-          value={this.state.term}
-          onChange={(event) => this.onInputChange(event)}
-          list='suggestions'
-        />
-        <div className='input-group-append'>
-          <button type='button' className='btn btn-primary'>
-            Add Symptom
-          </button>
-        </div>
-        <datalist id='suggestions'>
-          {symptomSuggestions.sort().map(this.renderSuggestions)}
-        </datalist>
-      </form>
-    );
-  }
-}
+    const inputProps = {
+      value: this.state.term,
+      onChange: this.onChange.bind(this),
+      // onBlur: this.onBlur,
+      type: 'search',
+      placeholder: 'Enter a symptom',
+    };
 
-const styles = {
-  inputGroup: {
-    width: '50vw',
-    // border: '2px solid red'
+    return (
+      <div className='symptoms-box'>
+        <Autosuggest
+          suggestions={symptomSuggestions}
+          onSuggestionsFetchRequested={this.onSuggestionsFetchRequested.bind(this)}
+          onSuggestionsClearRequested={this.onSuggestionsClearRequested.bind(this)}
+          getSuggestionValue={this.getSuggestionValue.bind(this)}
+          renderSuggestion={this.renderSuggestion}
+          inputProps={inputProps}
+        />
+        <SelectedSymptoms
+          symptoms={this.state.symptoms}
+          removeSymptom={this.removeSymptom.bind(this)}
+          submitSymptoms={this.submitSymptoms.bind(this)}
+        />
+      </div>
+    );
   }
 }
 
@@ -67,4 +93,4 @@ function mapStateToProps({ symptomSuggestions }) {
   return { symptomSuggestions }
 }
 
-export default connect(mapStateToProps, { fetchSuggestions })(SearchBar);
+export default connect(mapStateToProps, { fetchSuggestions, clearSuggestions, submitSymptoms })(SearchBar);
