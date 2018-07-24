@@ -1,23 +1,37 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
+import React from 'react';
 
-class FollowUpQuestions extends Component {
-  render() {
-    const { conv_id, quest_id, question } = this.props;
-    return (
-      <div>
-        {question && <h5>{question}</h5>}
+const FollowUpQuestions = ({ question, submitOption }) => {
+  return (
+    <div className='follow-up-questions-container'>
+      {question &&
+        <div className='follow-up-question'>
+          <h5>{question}</h5>
+        </div>}
+      <div className='btn-group btn-group-lg'>
+        <button
+          type='submit'
+          className='btn btn-primary'
+          onClick={() => submitOption('true')}
+        >
+          <i className="fas fa-check fa-2x"></i>
+        </button>
+        <button
+          type='submit'
+          className='btn btn-secondary'
+          onClick={() => submitOption('false')}
+        >
+          I don't know
+        </button>
+        <button
+          type='submit'
+          className='btn btn-danger'
+          onClick={() => submitOption('false')}
+        >
+          <i className="fas fa-times fa-2x"></i>
+        </button>
       </div>
-    );
-  }
+    </div>
+  )
 }
 
-function mapStateToProps({ followUp }) {
-  return {
-    conv_id: followUp.conv_id,
-    quest_id: followUp.quest_id,
-    question: followUp.question,
-  }
-}
-
-export default connect(mapStateToProps)(FollowUpQuestions);
+export default FollowUpQuestions;

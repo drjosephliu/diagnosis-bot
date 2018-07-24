@@ -1,10 +1,8 @@
 import React from 'react';
 
+const SelectedSymptoms = ({ symptoms, removeSymptom }) => {
 
-const SelectedSymptoms = props => {
-  const { symptoms, removeSymptom, submitSymptoms } = props;
-
-  const renderSymptoms = (symptom) => {
+  const renderSymptoms = symptom => {
     return (
       <div key={symptom} className='selected-symptoms-list-item'>
         <li key={symptom}>
@@ -23,12 +21,6 @@ const SelectedSymptoms = props => {
       <ul className='selected-symptoms-list'>
         {symptoms.map(renderSymptoms)}
       </ul>
-      <button
-        onClick={() => submitSymptoms()}
-        className='btn btn-primary'>
-        Submit
-        <i className="fas fa-chevron-right"></i>
-      </button>
     </div>
   );
 }
